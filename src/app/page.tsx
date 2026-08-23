@@ -1,69 +1,120 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Navbar from "@/components/Navbar";
+import VehicleSelector from "@/components/VehicleSelector";
+import OilReminderCard from "@/components/OilReminderCard";
+import { useVehicle } from "@/context/VehicleContext";
+import { Gauge, Wrench, Fuel, Calendar } from "lucide-react";
+
+export default function Dashboard() {
+  const { selectedVehicle, maintenanceLogs, fuelLogs, isLoading } = useVehicle();
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="p-4 flex-1">
+      {/* Header Aplikasi */}
+      <header className="mb-4">
+        <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Vehicle Tracker</h1>
+        <p className="text-xs text-slate-500">Monitoring perawatan & efisiensi kendaraan</p>
+      </header>
+
+      {/* Selector Kendaraan */}
+      <VehicleSelector />
+
+      {selectedVehicle ? (
+        <>
+          {/* Engine Pengingat Oli */}
+          <OilReminderCard vehicle={selectedVehicle} />
+
+          {/* Metric Stats */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
+                <Gauge className="w-4 h-4" />
+                <span className="text-xs text-slate-400 font-medium">Odometer Saat Ini</span>
+              </div>
+              <p className="text-lg font-extrabold text-slate-800 dark:text-slate-100">
+                {Number(selectedVehicle.odometer_saat_ini).toLocaleString()} <span className="text-xs font-normal">KM</span>
+              </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-1">
+                <Calendar className="w-4 h-4" />
+                <span className="text-xs text-slate-400 font-medium">Oli Terakhir</span>
+              </div>
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-1">
+                {selectedVehicle.tgl_ganti_oli_terakhir || "-"}
+              </p>
+            </div>
+          </div>
+
+          {/* Riwayat Aktivitas Terbaru */}
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm mb-4">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-2">
+              <Wrench className="w-4 h-4 text-blue-500" />
+              Catatan Servis Terakhir
+            </h3>
+
+            {maintenanceLogs.length === 0 ? (
+              <p className="text-xs text-slate-400 text-center py-4">Belum ada riwayat servis recorded</p>
+            ) : (
+              <div className="space-y-2.5">
+                {maintenanceLogs.slice(-3).reverse().map((item) => (
+                  <div key={item.id} className="flex justify-between items-center text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50">
+                    <div>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 block">{item.jenis_servis}</span>
+                      <span className="text-slate-400">{item.tanggal} • {item.odometer.toLocaleString()} KM</span>
+                    </div>
+                    <span className="font-semibold text-rose-500 dark:text-rose-400">
+                      Rp {Number(item.biaya).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Riwayat Pengisian BBM Terbaru */}
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-2">
+              <Fuel className="w-4 h-4 text-amber-500" />
+              Catatan BBM Terakhir
+            </h3>
+
+            {fuelLogs.length === 0 ? (
+              <p className="text-xs text-slate-400 text-center py-4">Belum ada riwayat pengisian BBM</p>
+            ) : (
+              <div className="space-y-2.5">
+                {fuelLogs.slice(-3).reverse().map((item) => (
+                  <div key={item.id} className="flex justify-between items-center text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50">
+                    <div>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 block">{item.liter} Liter</span>
+                      <span className="text-slate-400">{item.tanggal} • Odo: {item.odometer.toLocaleString()} KM</span>
+                    </div>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">
+                      Rp {Number(item.total_biaya).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-12 text-slate-400 text-sm">
+          Silakan tambah kendaraan terlebih dahulu untuk memulai pencatatan.
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      )}
+
+      <Navbar />
     </div>
   );
 }

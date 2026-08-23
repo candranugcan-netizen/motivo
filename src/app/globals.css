@@ -5,6 +5,14 @@
   --foreground: #171717;
 }
 
+@variant dark (&:where(.dark, .dark *));
+
+html.dark,
+html.dark body {
+  background-color: #0f172a !important; /* Warna slate-900 */
+  color: #f8fafc !important;            /* Warna slate-50 */
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
