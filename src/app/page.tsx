@@ -6,6 +6,36 @@ import OilReminderCard from "@/components/OilReminderCard";
 import { useVehicle } from "@/context/VehicleContext";
 import { Gauge, Wrench, Fuel, Calendar } from "lucide-react";
 
+// Fungsi format tanggal (Versi Paling Kebal)
+const formatTanggal = (rawVal?: any) => {
+  if (!rawVal || rawVal === "-") return "-";
+  
+  try {
+    // 1. Paksa ubah ke String apa pun bentuk datanya
+    const str = String(rawVal);
+    
+    // 2. Potong langsung di huruf "T" (untuk membuang T17:00:00.000Z)
+    const datePart = str.split("T")[0]; 
+    
+    // 3. Pecah berdasarkan strip "-"
+    const parts = datePart.split("-");
+    if (parts.length !== 3) return str; // Kembalikan string mentah jika gagal
+
+    const year = parts[0];
+    const monthIndex = parseInt(parts[1], 10) - 1;
+    const day = parts[2];
+
+    const namaBulan = [
+      "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", 
+      "Jul", "Agt", "Sep", "Okt", "Nov", "Des"
+    ];
+    
+    return `${day} ${namaBulan[monthIndex]} ${year}`;
+  } catch (error) {
+    return "Error Format"; // Tampilkan tulisan ini jika benar-benar gagal
+  }
+};
+
 export default function Dashboard() {
   const { selectedVehicle, maintenanceLogs, fuelLogs, isLoading } = useVehicle();
 
@@ -41,7 +71,7 @@ export default function Dashboard() {
                 <span className="text-xs text-slate-400 font-medium">Odometer Saat Ini</span>
               </div>
               <p className="text-lg font-extrabold text-slate-800 dark:text-slate-100">
-                {Number(selectedVehicle.odometer_saat_ini).toLocaleString()} <span className="text-xs font-normal">KM</span>
+                {Number(selectedVehicle.odometer_saat_ini).toLocaleString("id-ID")} <span className="text-xs font-normal">KM</span>
               </p>
             </div>
 
@@ -51,7 +81,8 @@ export default function Dashboard() {
                 <span className="text-xs text-slate-400 font-medium">Oli Terakhir</span>
               </div>
               <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-1">
-                {selectedVehicle.tgl_ganti_oli_terakhir || "-"}
+                {/* Format tanggal diterapkan di sini */}
+                {formatTanggal(selectedVehicle.tgl_ganti_oli_terakhir)}
               </p>
             </div>
           </div>
@@ -71,10 +102,11 @@ export default function Dashboard() {
                   <div key={item.id} className="flex justify-between items-center text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50">
                     <div>
                       <span className="font-bold text-slate-800 dark:text-slate-200 block">{item.jenis_servis}</span>
-                      <span className="text-slate-400">{item.tanggal} • {item.odometer.toLocaleString()} KM</span>
+                      {/* Format tanggal diterapkan di sini */}
+                      <span className="text-slate-400">{formatTanggal(item.tanggal)} • {Number(item.odometer).toLocaleString("id-ID")} KM</span>
                     </div>
                     <span className="font-semibold text-rose-500 dark:text-rose-400">
-                      Rp {Number(item.biaya).toLocaleString()}
+                      Rp {Number(item.biaya).toLocaleString("id-ID")}
                     </span>
                   </div>
                 ))}
@@ -97,10 +129,11 @@ export default function Dashboard() {
                   <div key={item.id} className="flex justify-between items-center text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50">
                     <div>
                       <span className="font-bold text-slate-800 dark:text-slate-200 block">{item.liter} Liter</span>
-                      <span className="text-slate-400">{item.tanggal} • Odo: {item.odometer.toLocaleString()} KM</span>
+                      {/* Format tanggal diterapkan di sini */}
+                      <span className="text-slate-400">{formatTanggal(item.tanggal)} • Odo: {Number(item.odometer).toLocaleString("id-ID")} KM</span>
                     </div>
                     <span className="font-semibold text-slate-700 dark:text-slate-300">
-                      Rp {Number(item.total_biaya).toLocaleString()}
+                      Rp {Number(item.total_biaya).toLocaleString("id-ID")}
                     </span>
                   </div>
                 ))}
